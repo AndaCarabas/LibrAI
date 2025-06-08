@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1014780193128",
+    "project_id": "librai-a5644",
+    "storage_bucket": "librai-a5644.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1014780193128:android:891d30c904752d2c52cedd",
+        "android_client_info": {
+          "package_name": "com.example.librai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC18hbil7eC0svsJ187wgoTZP4ZI_osgWU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
