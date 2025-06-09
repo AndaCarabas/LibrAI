@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.librai.data.repository.AuthRepository
 import com.example.librai.data.repository.BookRepository
+import com.example.librai.ui.navigation.AppNavGraph
 import com.example.librai.ui.screens.AuthScreen
 import com.example.librai.ui.screens.HomeScreen
 import com.example.librai.ui.screens.LibraryScreen
@@ -27,34 +28,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
+
         setContent {
             LibrAITheme {
-
-                val navController = rememberNavController()
                 val firebaseAuth = remember { FirebaseAuth.getInstance() }
                 val authViewModel = remember { AuthViewModel(AuthRepository(firebaseAuth)) }
                 val libraryViewModel = remember {LibraryViewModel(BookRepository(FirebaseFirestore.getInstance())) }
-
-
-                NavHost(navController = navController, startDestination = "auth") {
-                    composable("auth") {
-                        AuthScreen(navController = navController)
-                    }
-                    composable("home") {
-                        HomeScreen(authViewModel, navController = navController)
-                    }
-                    composable ("library") {
-                        val userId = FirebaseAuth.getInstance().currentUser?.uid
-                        if (userId != null) {
-                            LibraryScreen(viewModel = libraryViewModel, userId = userId)
-                        } else {
-                            // Handle the case where user is null (e.g. navigate to login screen)
-                            Toast.makeText(this@MainActivity,"Couldn't get uid!",Toast.LENGTH_LONG).show()
-
-                        }
-                    }
-
-                }
+                val navController = rememberNavController()
+                AppNavGraph(
+                    navController = navController,
+                    authViewModel = authViewModel,
+                    libraryViewModel = libraryViewModel
+                )
 
             }
         }

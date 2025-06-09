@@ -57,5 +57,12 @@ fun HomeScreen(viewModel: AuthViewModel, navController: NavController) {
         }) {
             Text("My library")
         }
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = {
+            navController.navigate("scanner") {
+            }
+        }) {
+            Text("Scanner")
+        }
     }
 }

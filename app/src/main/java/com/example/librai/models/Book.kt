@@ -5,7 +5,7 @@ data class Book(
     val title: String = "",
     val author: String = "",
     val isbn: String = "",
-    val imageUrl: String = "",
+    val coverUrl: String = "",
     val timestamp: Long = System.currentTimeMillis(),
     val summary: String? = null,
     val notes: String? = null
