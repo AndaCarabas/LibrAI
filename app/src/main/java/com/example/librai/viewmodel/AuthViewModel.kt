@@ -29,20 +29,8 @@ class AuthViewModel (private val repository: AuthRepository) : ViewModel() {
     private val _userName = mutableStateOf<String?>(null)
     val userName: State<String?> = _userName
 
-//    var userName by mutableStateOf("")
-//        private set
-//
-//    private val _email = MutableStateFlow("")
-//    var email: StateFlow<String> = _email
-//
-//    private val _password = MutableStateFlow("")
-//    var password: StateFlow<String> = _password
-//
-//    private val _confirmPassword = MutableStateFlow("")
-//    var confirmPassword: StateFlow<String> = _confirmPassword
-//
-//    private val _name = MutableStateFlow("") // Only for SignUp
-//    var name: StateFlow<String> = _name
+    private val _userUid = mutableStateOf<String?>(null)
+    val userUid: State<String?> = _userUid
 
     var email by mutableStateOf("")
     var password by mutableStateOf("")
@@ -80,19 +68,17 @@ class AuthViewModel (private val repository: AuthRepository) : ViewModel() {
         }
     }
 
-//    fun signUp(email: String, password: String) {
-//        viewModelScope.launch {
-//            _authState.value = AuthState.Loading
-//            val result = repository.registerUser(email, password)
-//            _authState.value = if (result.isSuccess) AuthState.Success else AuthState.Error(result.exceptionOrNull()?.message ?: "Unknown error")
-//        }
-//    }
+    fun fetchUID() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        viewModelScope.launch {
+            val result = repository.getUserData(uid)
+            if (result.isSuccess) {
+                _userUid.value = result.getOrNull()?.id
+            }
+        }
+    }
 
     fun signUp(onSuccess: () -> Unit) {
-//        val email = _email.value.trim()
-//        val password = _password.value.trim()
-//        val name = _name.value.trim()
-//        val confirmPassword = _confirmPassword.value.trim()
 
         if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
             _error.value = "All fields are required"
@@ -128,8 +114,6 @@ class AuthViewModel (private val repository: AuthRepository) : ViewModel() {
     }
 
     fun signIn(onSuccess: () -> Unit) {
-//        val email = _email.value.trim()
-//        val password = _password.value.trim()
 
         if (email.isEmpty() || password.isEmpty()) {
             _error.value = "Email and password must not be empty"
@@ -160,15 +144,6 @@ class AuthViewModel (private val repository: AuthRepository) : ViewModel() {
     }
 }
 
-
-
-//    fun signIn(email: String, password: String) {
-//        viewModelScope.launch {
-//            _authState.value = AuthState.Loading
-//            val result = repository.loginUser(email, password)
-//            _authState.value = if (result.isSuccess) AuthState.Success else AuthState.Error(result.exceptionOrNull()?.message ?: "Unknown error")
-//        }
-//    }
 
 
 sealed class AuthState {

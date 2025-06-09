@@ -22,9 +22,14 @@ import com.example.librai.viewmodel.AuthViewModel
 @Composable
 fun HomeScreen(viewModel: AuthViewModel, navController: NavController) {
     val userName by viewModel.userName
+    val userID by viewModel.userUid
 
     LaunchedEffect(Unit) {
         viewModel.fetchUserName()
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchUID()
     }
 
     Column(
@@ -44,6 +49,13 @@ fun HomeScreen(viewModel: AuthViewModel, navController: NavController) {
             }
         }) {
             Text("Log Out")
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = {
+            navController.navigate("library") {
+            }
+        }) {
+            Text("My library")
         }
     }
 }

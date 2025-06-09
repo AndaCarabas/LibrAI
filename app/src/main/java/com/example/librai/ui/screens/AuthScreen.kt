@@ -48,8 +48,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun SignInForm(viewModel: AuthViewModel, navController: NavController) {
 
-//    val email by viewModel.email.collectAsState()
-//    val password by viewModel.password.collectAsState()
     val context = LocalContext.current
     val signUpSuccess = viewModel.signUpSuccess
     val signUpMessage = viewModel.signUpMessage
