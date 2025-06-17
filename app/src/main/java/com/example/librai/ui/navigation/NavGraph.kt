@@ -22,6 +22,7 @@ import com.example.librai.ui.components.CameraPermissionHandler
 import com.example.librai.ui.screens.AddBookOptionScreen
 import com.example.librai.ui.screens.AuthScreen
 import com.example.librai.ui.screens.BarcodeScannerScreen
+import com.example.librai.ui.screens.BookDetailScreen
 import com.example.librai.ui.screens.BookFormScreen
 import com.example.librai.ui.screens.BookResultScreen
 import com.example.librai.ui.screens.HomeScreen
@@ -86,15 +87,12 @@ fun AppNavGraph(
                 }
             )
         }
-        composable("bookForm?isbn={isbn}", arguments = listOf(
-            navArgument("isbn") {
-                type = NavType.StringType
-                nullable = true
-                defaultValue = null
-            }
+        composable("bookForm?isbn={isbn}&bookId={bookId}", arguments = listOf(
+            navArgument("isbn") { type = NavType.StringType; nullable = true; defaultValue = null },
+            navArgument("bookId") { type = NavType.StringType; nullable = true; defaultValue = null }
         )) { backStackEntry ->
-            val context = LocalContext.current
             val isbn = backStackEntry.arguments?.getString("isbn")
+            val bookId = backStackEntry.arguments?.getString("bookId")
 
             val firestore = FirebaseFirestore.getInstance()
             val auth = FirebaseAuth.getInstance()
@@ -105,24 +103,12 @@ fun AppNavGraph(
 
             BookFormScreen(
                 isbn = isbn,
-                context = context,
+                bookId = bookId,
                 navController = navController
                 // If you want to use viewModel internally, you can access it via `viewModel()`
             )
         }
 
-//        composable("form/{isbn?}", arguments = listOf(
-//            navArgument("isbn") { nullable = true })
-//        ) { backStackEntry ->
-//            val isbn = backStackEntry.arguments?.getString("isbn")
-//            val viewModel: BookFormViewModel = viewModel()
-//            BookFormScreen(isbn = isbn, viewModel = viewModel)
-//        }
-//        composable("result/{isbn}") { backStackEntry ->
-//            val isbn = backStackEntry.arguments?.getString("isbn") ?: return@composable
-//            val viewModel: BookFormViewModel = viewModel()
-//            BookResultScreen(viewModel = viewModel, isbn = isbn, navController = navController)
-//        }
 
         composable("result/{isbn}") { backStackEntry ->
             val isbn = backStackEntry.arguments?.getString("isbn") ?: return@composable
@@ -137,6 +123,18 @@ fun AppNavGraph(
             book?.let {
                 BookResultScreen(it)
             } ?: Text("Loading...", modifier = Modifier.padding(16.dp))
+        }
+
+        composable(
+            "bookDetail/{bookId}",
+            arguments = listOf(navArgument("bookId"){ type = NavType.StringType })
+        ) { backStack ->
+            val bookId = backStack.arguments!!.getString("bookId")!!
+            Log.d("BookAPI", "***BookID : $bookId")
+            BookDetailScreen(
+                bookId = backStack.arguments!!.getString("bookId")!!,
+                navController = navController
+            )
         }
     }
 }

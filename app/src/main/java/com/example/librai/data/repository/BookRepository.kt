@@ -22,19 +22,26 @@ class BookRepository (
     private val storage: FirebaseStorage = FirebaseStorage.getInstance()
     ) {
 
+    private fun userBooks() =
+        firestore.collection("users")
+            .document(auth.currentUser!!.uid)
+            .collection("books")
+
     fun getUserBooksRef(userId: String) =
         firestore.collection("users").document(userId).collection("books")
 
-    suspend fun addBook(userId: String, book: Book): Result<Unit> {
-        return try {
-            val bookId = getUserBooksRef(userId).document().id
-            val bookWithId = book.copy(id = bookId)
-            getUserBooksRef(userId).document(bookId).set(bookWithId).await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+    suspend fun getBookById(id: String): Book? =
+        userBooks().document(id).get().await().toObject(Book::class.java)
+
+    fun generateBookId(): String = userBooks().document().id
+
+    fun saveOrUpdateBook(book: Book, onResult: (Boolean) -> Unit) {
+        userBooks().document(book.id)
+            .set(book)
+            .addOnSuccessListener { onResult(true) }
+            .addOnFailureListener { onResult(false) }
     }
+
     /**
      * Uploads the local image URI to Storage under /covers/{uid}/{uuid}.jpg
      * and returns the public download URL as a String.
@@ -54,15 +61,22 @@ class BookRepository (
 
     fun saveBook(book: Book, onResult: (Boolean) -> Unit) {
         val uid = auth.currentUser?.uid ?: return onResult(false)
-        val bookId = getUserBooksRef(uid).document().id
-
-        val bookData = book.copy(id = bookId)
-        firestore.collection("users")
+        val bookId = firestore
+            .collection("users")
             .document(uid)
             .collection("books")
-            .add(bookData)
-            .addOnSuccessListener { onResult(true) }
-            .addOnFailureListener { onResult(false) }
+            .document()
+            .id
+
+        val bookData = book.copy(id = bookId)
+        firestore
+            .collection("users")
+            .document(uid)
+            .collection("books")
+            .document(bookId)           // ← explicitly use your generated ID
+            .set(bookData)              // ← write the data under that key
+            .addOnSuccessListener      { onResult(true) }
+            .addOnFailureListener      { onResult(false) }
     }
 
     suspend fun getBooks(userId: String): Result<List<Book>> {

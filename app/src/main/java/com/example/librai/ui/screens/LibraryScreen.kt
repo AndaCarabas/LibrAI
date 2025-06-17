@@ -156,7 +156,7 @@ fun LibraryScreen(navController: NavController,viewModel: LibraryViewModel, user
                 ) {
                     items(filteredBooks) { book ->
                         BookListItem(book) {
-                            // navigate to detail or whatever
+                            navController.navigate("bookDetail/${book.id}")
                         }
                     }
                     item { Spacer(modifier = Modifier.height(80.dp)) } // bottom padding

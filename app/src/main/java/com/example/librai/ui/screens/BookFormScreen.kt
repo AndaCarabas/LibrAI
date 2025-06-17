@@ -44,10 +44,10 @@ import java.io.File
 @Composable
 fun BookFormScreen(
     isbn: String?,
-    context: Context = LocalContext.current,
+    bookId: String?,
     navController: NavController
 ) {
-
+    val context = LocalContext.current
     val firestore = remember { FirebaseFirestore.getInstance() }
     val auth = remember { FirebaseAuth.getInstance() }
     val repository = remember { BookRepository(firestore, auth) }
@@ -55,7 +55,10 @@ fun BookFormScreen(
     val viewModel: BookFormViewModel = viewModel(
         factory = BookFormViewModelFactory(repository)
     )
-    //val book by viewModel.bookInfo.collectAsState()
+
+    LaunchedEffect(bookId, isbn) {
+        viewModel.initForm(bookId = bookId, isbn = isbn)
+    }
 
     val photoFile = remember { File.createTempFile("book_", ".jpg", context.cacheDir) }
     val photoUri = remember {
@@ -153,25 +156,16 @@ fun BookFormScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Add more fields: publisher, description, etc.
+        // TODO Add more fields: publisher, description, etc.
 
         Spacer(Modifier.height(24.dp))
-        Button(
-            onClick = {
-                viewModel.saveBook {
-                    if (it) {
-                        Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
-                        navController.navigate("library") {popUpTo("bookForm") { inclusive = true }}
-                    }
-                    else {
-                        Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show()
-                        navController.popBackStack()
-                    }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Save Book")
+        Button(onClick = {
+            viewModel.saveBook { success ->
+                if (success) navController.popBackStack("library", false)
+                else Toast.makeText(context, "Save failed", Toast.LENGTH_SHORT).show()
+            }
+        }) {
+            Text(if (bookId != null) "Update Book" else "Save Book")
         }
     }
 }

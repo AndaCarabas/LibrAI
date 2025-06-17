@@ -1,0 +1,208 @@
+package com.example.librai.ui.screens
+
+import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.example.librai.data.repository.BookRepository
+import com.example.librai.ui.theme.PrimaryColor
+import com.example.librai.viewmodel.BookDetailViewModel
+import com.example.librai.viewmodel.BookDetailViewModelFactory
+import com.example.librai.viewmodel.BookFormViewModel
+import com.example.librai.viewmodel.BookFormViewModelFactory
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BookDetailScreen(
+    bookId: String,
+    navController: NavController,
+) {
+    val context = LocalContext.current
+    val firestore = remember { FirebaseFirestore.getInstance() }
+    val auth = remember { FirebaseAuth.getInstance() }
+    val repository = remember { BookRepository(firestore, auth) }
+
+    val viewModel: BookDetailViewModel = viewModel(
+        factory = BookDetailViewModelFactory(firestore,auth)
+    )
+
+    val book by viewModel.book.collectAsState()
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+
+    // Load when screen is shown
+    LaunchedEffect(bookId) {
+        viewModel.loadBook(bookId)
+    }
+
+    Log.d("BookAPI", "______BookID : $bookId")
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title   = { Text("Delete this book?") },
+            text    = { Text("This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirm = false
+                    viewModel.deleteBook(bookId) { success ->
+                        if (success) navController.popBackStack("library", false)
+                        else Toast.makeText(context, "Delete failed", Toast.LENGTH_SHORT).show()
+                    }
+                }) { Text("Delete") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                title = { /* empty—we’ll draw our own below */ },
+                actions = {
+                    IconButton(onClick = {
+                        // Navigate to your edit form, passing bookId
+                        navController.navigate("bookForm?bookId=${bookId}")
+                    }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit")
+                    }
+                    IconButton(onClick = { showDeleteConfirm = true }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
+            )
+        },
+        containerColor = PrimaryColor,
+        contentColor   = Color.White
+    ) { inner ->
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(inner)
+        ) {
+            book?.let { b ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    // Cover
+                    AsyncImage(
+                        model = b.coverUrl,
+                        contentDescription = "Cover",
+                        modifier = Modifier
+                            .fillMaxWidth(0.6f)
+                            .aspectRatio(0.7f)
+                            .align(Alignment.CenterHorizontally)
+                            .padding(top = 24.dp),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    Spacer(Modifier.height(24.dp))
+
+                    // Title / Author
+                    Text(
+                        text = b.title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = Color.White,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                    Text(
+                        text = b.author,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.8f),
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+
+                    // White “card” for description + buttons
+                    Surface(
+                        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                        color = Color.White,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 32.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(24.dp)) {
+                            Text("Description", style = MaterialTheme.typography.titleMedium)
+                            Spacer(Modifier.height(8.dp))
+                            Text(b.description ?: "No description available.", style = MaterialTheme.typography.bodySmall)
+
+                            Spacer(Modifier.height(24.dp))
+                            // Your three action buttons
+                            listOf("Get Summary", "Find Similar Books", "Buy Book").forEach { label ->
+                                Button(
+                                    onClick = { /* TODO */ },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                                ) {
+                                    Text(label, color = Color.White)
+                                }
+                            }
+                        }
+                    }
+                }
+            } ?: run {
+                // loading or “not found”
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Color.White)
+                }
+            }
+        }
+    }
+}

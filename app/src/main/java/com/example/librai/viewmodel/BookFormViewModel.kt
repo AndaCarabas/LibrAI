@@ -24,12 +24,12 @@ import java.io.File
 
 class BookFormViewModel (private val repository: BookRepository) : ViewModel() {
 
-
-    var bookTitle by mutableStateOf("")
-    var bookAuthor by mutableStateOf("")
-    var books = mutableStateListOf<Book>()
-    var coverUrl by mutableStateOf<String?>(null)
-    var imageUri by mutableStateOf<Uri?>(null)
+    var bookId      by mutableStateOf<String?>(null)
+    var isbn       by mutableStateOf<String?>(null)
+    var bookTitle   by mutableStateOf("")
+    var bookAuthor  by mutableStateOf("")
+    var coverUrl    by mutableStateOf<String?>(null)
+    var imageUri    by mutableStateOf<Uri?>(null)
     var errorMessage by mutableStateOf<String?>(null)
     private val _userUid = mutableStateOf<String?>(null)
     val userUid: State<String?> = _userUid
@@ -38,6 +38,27 @@ class BookFormViewModel (private val repository: BookRepository) : ViewModel() {
     val bookInfo: StateFlow<BookInfo?> = _bookInfo
 
     var bookNotFound by mutableStateOf(false)
+
+    fun initForm(bookId: String?, isbn: String?) {
+        this.bookId = bookId
+        this.isbn   = isbn
+
+        when {
+            bookId != null -> loadExistingBook(bookId)
+            isbn   != null -> loadBookInfo(isbn)       // your API fetch
+            else            -> { /* blank form */     }
+        }
+    }
+
+    private fun loadExistingBook(id: String) {
+        viewModelScope.launch {
+            repository.getBookById(id)?.let { b ->
+                bookTitle    = b.title
+                bookAuthor   = b.author
+                coverUrl = b.coverUrl
+            }
+        }
+    }
 
     fun loadBookInfo(isbn: String) {
         viewModelScope.launch {
@@ -72,28 +93,25 @@ class BookFormViewModel (private val repository: BookRepository) : ViewModel() {
 //    }
 
     fun saveBook(onResult: (Boolean) -> Unit) {
-//        val book = Book(
-//            title = bookTitle.trim(),
-//            author = bookAuthor.trim(),
-//            coverUrl = imageUri?.toString() ?: coverUrl
-//        )
-//        repository.saveBook(book, onResult)
         viewModelScope.launch {
             try {
                 // 1) If the user picked/took a photo, upload it now
                 val finalCoverUrl = imageUri
                     ?.let { repository.uploadCoverImage(it) }
                     ?: coverUrl  // else keep the API‐provided URL (or null)
-
+                // 2) decide on id
+                val id = bookId ?: repository.generateBookId()
                 // 2) Build the Book object
                 val b = Book(
+                    id       = id,
                     title    = bookTitle.trim(),
                     author   = bookAuthor.trim(),
-                    coverUrl = finalCoverUrl
+                    coverUrl = finalCoverUrl,
+                    isbn     = isbn ?: ""
                 )
 
                 // 3) Persist in Firestore
-                repository.saveBook(b, onResult)
+                repository.saveOrUpdateBook(b, onResult)
             } catch (e: Exception) {
                 errorMessage = e.message
                 onResult(false)
