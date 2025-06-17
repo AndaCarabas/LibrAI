@@ -16,3 +16,4 @@ val AccentColor = Color(0xFF00BFA6)      // Teal Mint
 val BackgroundColor = Color(0xFFF3F1E5)  // Soft White
 val HighlightColor = Color(0xFFFFC857)   // Golden Yellow
 val TextPrimary = Color(0xFF1C1C1E)      // Almost Black
+val MintBackground = Color(0xFFEAF5F2)

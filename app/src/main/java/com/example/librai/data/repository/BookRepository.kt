@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.librai.models.Book
 import com.example.librai.models.BookInfo
 import com.example.librai.models.User
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import io.ktor.client.*
@@ -12,7 +13,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.serialization.json.*
 
-class BookRepository (private val firestore: FirebaseFirestore) {
+class BookRepository (private val firestore: FirebaseFirestore, private val auth: FirebaseAuth) {
 
     fun getUserBooksRef(userId: String) =
         firestore.collection("users").document(userId).collection("books")
@@ -26,6 +27,19 @@ class BookRepository (private val firestore: FirebaseFirestore) {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    fun saveBook(book: Book, onResult: (Boolean) -> Unit) {
+        val uid = auth.currentUser?.uid ?: return onResult(false)
+        val bookId = getUserBooksRef(uid).document().id
+
+        val bookData = book.copy(id = bookId)
+        firestore.collection("users")
+            .document(uid)
+            .collection("books")
+            .add(bookData)
+            .addOnSuccessListener { onResult(true) }
+            .addOnFailureListener { onResult(false) }
     }
 
     suspend fun getBooks(userId: String): Result<List<Book>> {
@@ -48,6 +62,10 @@ class BookRepository (private val firestore: FirebaseFirestore) {
             val json = Json.parseToJsonElement(response).jsonObject
             val volumeInfo = json["items"]?.jsonArray?.get(0)
                 ?.jsonObject?.get("volumeInfo")?.jsonObject
+
+            val totalItems = json["totalItems"]?.jsonPrimitive?.intOrNull ?: 0
+            if (totalItems == 0) return null
+
 
             Log.d("BookAPI", "Request: ${url}")
             Log.d("BookAPI", "Response: ${response}")

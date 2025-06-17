@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
             LibrAITheme {
                 val firebaseAuth = remember { FirebaseAuth.getInstance() }
                 val authViewModel = remember { AuthViewModel(AuthRepository(firebaseAuth)) }
-                val libraryViewModel = remember {LibraryViewModel(BookRepository(FirebaseFirestore.getInstance())) }
+                val libraryViewModel = remember {LibraryViewModel(BookRepository(FirebaseFirestore.getInstance(), firebaseAuth)) }
                 val navController = rememberNavController()
                 AppNavGraph(
                     navController = navController,
