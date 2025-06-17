@@ -87,7 +87,7 @@ fun SignInForm(viewModel: AuthViewModel, navController: NavController) {
                 .fillMaxWidth()
                 .padding(10.dp))
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { viewModel.signIn { navController.navigate("home") } }, modifier = Modifier
+        Button(onClick = { viewModel.signIn { navController.navigate("home")  { popUpTo("auth") { inclusive = true }} } }, modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp)) {
             Text("Sign In")
@@ -167,7 +167,7 @@ fun SignUpForm(viewModel: AuthViewModel, navController: NavController) {
                 .padding(10.dp))
         Spacer(modifier = Modifier.height(10.dp))
         Button(onClick = { viewModel.signUp {
-            navController.navigate("home")
+            navController.navigate("home")  { popUpTo("auth") { inclusive = true }}
         }}, modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp)) {

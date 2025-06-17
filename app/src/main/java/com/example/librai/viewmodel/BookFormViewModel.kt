@@ -72,12 +72,33 @@ class BookFormViewModel (private val repository: BookRepository) : ViewModel() {
 //    }
 
     fun saveBook(onResult: (Boolean) -> Unit) {
-        val book = Book(
-            title = bookTitle.trim(),
-            author = bookAuthor.trim(),
-            coverUrl = imageUri?.toString() ?: coverUrl
-        )
-        repository.saveBook(book, onResult)
+//        val book = Book(
+//            title = bookTitle.trim(),
+//            author = bookAuthor.trim(),
+//            coverUrl = imageUri?.toString() ?: coverUrl
+//        )
+//        repository.saveBook(book, onResult)
+        viewModelScope.launch {
+            try {
+                // 1) If the user picked/took a photo, upload it now
+                val finalCoverUrl = imageUri
+                    ?.let { repository.uploadCoverImage(it) }
+                    ?: coverUrl  // else keep the API‐provided URL (or null)
+
+                // 2) Build the Book object
+                val b = Book(
+                    title    = bookTitle.trim(),
+                    author   = bookAuthor.trim(),
+                    coverUrl = finalCoverUrl
+                )
+
+                // 3) Persist in Firestore
+                repository.saveBook(b, onResult)
+            } catch (e: Exception) {
+                errorMessage = e.message
+                onResult(false)
+            }
+        }
     }
 
 

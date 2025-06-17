@@ -105,8 +105,8 @@ fun BookFormScreen(
 
     Column(
         modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp),
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Cover image preview
@@ -159,11 +159,14 @@ fun BookFormScreen(
         Button(
             onClick = {
                 viewModel.saveBook {
-                    if (it)
+                    if (it) {
                         Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
-                    else
+                        navController.navigate("library") {popUpTo("bookForm") { inclusive = true }}
+                    }
+                    else {
                         Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show()
-                    navController.popBackStack()
+                        navController.popBackStack()
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth()

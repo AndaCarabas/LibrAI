@@ -80,6 +80,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     //implementation(libs.androidx.material3)
     implementation("androidx.compose.material3:material3:1.4.0-alpha15")
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.firebase.common.ktx)
     implementation(libs.androidx.navigation.runtime.android)

@@ -75,9 +75,7 @@ fun HomeScreen(viewModel: AuthViewModel, navController: NavController) {
                 Button(onClick = {
                     // optional: call signOut logic
                     viewModel.logout()
-                    navController.navigate("auth") {
-                        popUpTo("home") { inclusive = true }
-                    }
+                    navController.navigate("auth") { popUpTo(0) }
                 }) {
                     Text("Log Out")
                 }

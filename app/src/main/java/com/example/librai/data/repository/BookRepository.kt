@@ -1,19 +1,26 @@
 package com.example.librai.data.repository
 
+import android.net.Uri
 import android.util.Log
 import com.example.librai.models.Book
 import com.example.librai.models.BookInfo
 import com.example.librai.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.serialization.json.*
+import java.util.UUID
 
-class BookRepository (private val firestore: FirebaseFirestore, private val auth: FirebaseAuth) {
+class BookRepository (
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth,
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
+    ) {
 
     fun getUserBooksRef(userId: String) =
         firestore.collection("users").document(userId).collection("books")
@@ -27,6 +34,22 @@ class BookRepository (private val firestore: FirebaseFirestore, private val auth
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+    /**
+     * Uploads the local image URI to Storage under /covers/{uid}/{uuid}.jpg
+     * and returns the public download URL as a String.
+     */
+    suspend fun uploadCoverImage(localUri: Uri): String {
+        val uid = auth.currentUser?.uid
+            ?: error("no user")
+        val ref = storage
+            .reference
+            .child("covers/$uid/${UUID.randomUUID()}.jpg")
+
+        // upload file
+        ref.putFile(localUri).await()
+        // get download URL
+        return ref.downloadUrl.await().toString()
     }
 
     fun saveBook(book: Book, onResult: (Boolean) -> Unit) {
