@@ -10,6 +10,10 @@ android {
     namespace = "com.example.librai"
     compileSdk = 35
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.example.librai"
         minSdk = 24
@@ -17,6 +21,17 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        val openAiKey: String = project
+            .findProperty("OPENAI_API_KEY") as? String
+            ?: throw GradleException(
+                "Please define OPENAI_API_KEY in your gradle.properties"
+            )
+
+        buildConfigField(
+            type  = "String",
+            name  = "OPENAI_API_KEY",
+            value = "\"$openAiKey\""
+        )
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -38,6 +53,7 @@ android {
     }
     buildFeatures {
         compose = true
+
     }
 }
 
@@ -62,6 +78,7 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.gson)
 
     implementation(libs.guava)
     implementation(libs.coil.compose)

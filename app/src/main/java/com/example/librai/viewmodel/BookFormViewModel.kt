@@ -34,6 +34,7 @@ class BookFormViewModel (private val repository: BookRepository) : ViewModel() {
     private val _userUid = mutableStateOf<String?>(null)
     val userUid: State<String?> = _userUid
 
+
     private val _bookInfo = MutableStateFlow<BookInfo?>(null)
     val bookInfo: StateFlow<BookInfo?> = _bookInfo
 

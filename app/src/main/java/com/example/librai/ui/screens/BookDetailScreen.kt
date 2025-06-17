@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -74,13 +76,13 @@ fun BookDetailScreen(
 
     val book by viewModel.book.collectAsState()
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showSummaryDialog by remember { mutableStateOf(false) }
+    var showSimilarDialog by remember { mutableStateOf(false) }
 
     // Load when screen is shown
     LaunchedEffect(bookId) {
         viewModel.loadBook(bookId)
     }
-
-    Log.d("BookAPI", "______BookID : $bookId")
 
     if (showDeleteConfirm) {
         AlertDialog(
@@ -183,16 +185,42 @@ fun BookDetailScreen(
 
                             Spacer(Modifier.height(24.dp))
                             // Your three action buttons
-                            listOf("Get Summary", "Find Similar Books", "Buy Book").forEach { label ->
-                                Button(
-                                    onClick = { /* TODO */ },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
-                                ) {
-                                    Text(label, color = Color.White)
+                            Button(
+                                onClick = {
+                                    viewModel.fetchSummary(b)
+                                    showSummaryDialog = true
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                            ) {
+                                if (viewModel.isLoadingSummary) {
+                                    CircularProgressIndicator(color=Color.White, modifier=Modifier.size(16.dp))
+                                    Spacer(Modifier.width(8.dp))
                                 }
+                                Text("Get Summary")
+                            }
+                            Spacer(Modifier.height(12.dp))
+                            Button(
+                                onClick = {
+                                    viewModel.fetchSimilar(b)
+                                    showSimilarDialog = true
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                            ) {
+                                if (viewModel.isLoadingSimilar) {
+                                    CircularProgressIndicator(color=Color.White, modifier=Modifier.size(16.dp))
+                                    Spacer(Modifier.width(8.dp))
+                                }
+                                Text("Find Similar Books")
+                            }
+                            Spacer(Modifier.height(12.dp))
+                            Button(
+                                onClick = { /* Intent to browser or ecommerce */ },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                            ) {
+                                Text("Buy Book")
                             }
                         }
                     }
@@ -205,4 +233,41 @@ fun BookDetailScreen(
             }
         }
     }
+    // — Summary Dialog —
+    if (showSummaryDialog) {
+        AlertDialog(
+            onDismissRequest = { showSummaryDialog = false },
+            title   = { Text("Summary") },
+            text    = { Text(viewModel.summaryText ?: "No summary available.") },
+            confirmButton = {
+                TextButton(onClick = { showSummaryDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+    // — Similar Books Dialog —
+    if (showSimilarDialog) {
+        AlertDialog(
+            onDismissRequest = { showSimilarDialog = false },
+            title   = { Text("Similar Books") },
+            text    = {
+                Column {
+                    if (viewModel.similarBooks.isEmpty()) {
+                        Text("No recommendations found.")
+                    } else {
+                        viewModel.similarBooks.forEach { info ->
+                            Text("• ${info.title} by ${info.author}")
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showSimilarDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+
 }
