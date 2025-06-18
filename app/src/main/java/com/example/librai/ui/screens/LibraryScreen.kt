@@ -55,6 +55,7 @@ fun LibraryScreen(navController: NavController,viewModel: LibraryViewModel, user
     var searchQuery by remember { mutableStateOf("") }
     val context = LocalContext.current
     val systemUi = rememberSystemUiController()
+    var showSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.loadBooks(userId)
@@ -68,13 +69,20 @@ fun LibraryScreen(navController: NavController,viewModel: LibraryViewModel, user
         containerColor = Color.White,
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate("scanner") },
+                onClick = { showSheet = true },
                 containerColor = HighlightColor,
                 contentColor = Color.White,
                 shape = RoundedCornerShape(16.dp),
                 elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
                 Icon(Icons.Default.CenterFocusStrong, contentDescription = "Scan")
+            }
+            if (showSheet) {
+                AddBookOptionBottomSheet(
+                    onScan = { navController.navigate("scanner") },
+                    onManual = { navController.navigate("bookForm") },
+                    onDismiss = { showSheet = false }
+                )
             }
         },
         bottomBar = {

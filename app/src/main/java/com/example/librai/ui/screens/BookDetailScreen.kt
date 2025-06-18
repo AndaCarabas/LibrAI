@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -47,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -105,7 +107,9 @@ fun BookDetailScreen(
                 TextButton(onClick = { showDeleteConfirm = false }) {
                     Text("Cancel")
                 }
-            }
+            },
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
         )
     }
 
@@ -129,7 +133,12 @@ fun BookDetailScreen(
                         Icon(Icons.Default.Delete, contentDescription = "Delete")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryColor)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor              = PrimaryColor,
+                    navigationIconContentColor  = Color.White,
+                    actionIconContentColor      = Color.White,
+                    titleContentColor           = Color.White
+                )
             )
         },
         containerColor = PrimaryColor,
@@ -144,7 +153,6 @@ fun BookDetailScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
-                        .padding(16.dp)
                 ) {
                     // Cover
                     AsyncImage(
@@ -154,45 +162,58 @@ fun BookDetailScreen(
                             .fillMaxWidth(0.6f)
                             .aspectRatio(0.7f)
                             .align(Alignment.CenterHorizontally)
-                            .padding(top = 24.dp),
-                        contentScale = ContentScale.Crop
+                            .padding(top = 16.dp),
+                        contentScale = ContentScale.Fit
                     )
-
                     Spacer(Modifier.height(24.dp))
-
                     // Title / Author
                     Text(
                         text = b.title,
                         style = MaterialTheme.typography.headlineMedium,
                         color = Color.White,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        //modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
+                        modifier  = Modifier
+                            .fillMaxWidth(),                  // <-- take up all the available width
+                        textAlign = TextAlign.Center
                     )
                     Text(
                         text = b.author,
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.8f),
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        //modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
+                        modifier  = Modifier
+                            .fillMaxWidth(),                  // <-- take up all the available width
+                        textAlign = TextAlign.Center
                     )
-
                     // White “card” for description + buttons
                     Surface(
                         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                         color = Color.White,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 32.dp)
+                            .fillMaxHeight()
+                            .padding(top = 16.dp)
                     ) {
-                        Column(modifier = Modifier.padding(24.dp)) {
+                        Column(modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp)
+                        ) {
                             Text("Description", style = MaterialTheme.typography.titleMedium)
                             Spacer(Modifier.height(8.dp))
                             Text(b.description ?: "No description available.", style = MaterialTheme.typography.bodySmall)
+                            if (b.categories.isNotEmpty()) {
+                                Text("Categories: " + b.categories.joinToString(", "))
+                            }
+                            Text("Status: ${b.status}")
+                            b.notes?.let {
+                                Text("Notes: $it")
+                            }
 
                             Spacer(Modifier.height(24.dp))
                             // Your three action buttons
                             Button(
                                 onClick = {
                                     viewModel.fetchSummary(b)
-                                    showSummaryDialog = true
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
@@ -203,11 +224,15 @@ fun BookDetailScreen(
                                 }
                                 Text("Get Summary")
                             }
+                            LaunchedEffect(viewModel.isLoadingSummary) {
+                                if (!viewModel.isLoadingSummary && viewModel.summaryText != null) {
+                                    showSummaryDialog = true
+                                }
+                            }
                             Spacer(Modifier.height(12.dp))
                             Button(
                                 onClick = {
                                     viewModel.fetchSimilar(b)
-                                    showSimilarDialog = true
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
@@ -218,8 +243,12 @@ fun BookDetailScreen(
                                 }
                                 Text("Find Similar Books")
                             }
-                            Spacer(Modifier.height(12.dp))
-
+                            LaunchedEffect(viewModel.isLoadingSimilar) {
+                                if (!viewModel.isLoadingSummary && !viewModel.similarBooks.isEmpty()) {
+                                    showSimilarDialog = true
+                                }
+                            }
+                            Spacer(Modifier.height(10.dp))
                             OutlinedTextField(
                                 value = userNotes,
                                 onValueChange = { userNotes = it },
@@ -229,10 +258,10 @@ fun BookDetailScreen(
                                     .fillMaxWidth()
                                     .padding(vertical = 8.dp)
                             )
+                            Spacer(Modifier.height(12.dp))
                             Button(
                                 onClick = {
                                     viewModel.fetchContextualRecs(b, userNotes)
-                                    showPersonalDialog = true
                                 },
                                 enabled = !viewModel.isLoadingPersonalized,
                                 modifier = Modifier.fillMaxWidth(),
@@ -244,6 +273,12 @@ fun BookDetailScreen(
                                 }
                                 Text("Get Personalized Recs")
                             }
+                            LaunchedEffect(viewModel.isLoadingPersonalized) {
+                                if (!viewModel.personalizedRecs.isEmpty() && !viewModel.isLoadingPersonalized) {
+                                    showPersonalDialog = true
+                                }
+                            }
+                            Spacer(Modifier.height(12.dp))
                             Button(
                                 onClick = { /* Intent to browser or ecommerce */ },
                                 modifier = Modifier.fillMaxWidth(),
@@ -272,7 +307,9 @@ fun BookDetailScreen(
                 TextButton(onClick = { showSummaryDialog = false }) {
                     Text("OK")
                 }
-            }
+            },
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
         )
     }
     // — Similar Books Dialog —
@@ -295,7 +332,9 @@ fun BookDetailScreen(
                 TextButton(onClick = { showSimilarDialog = false }) {
                     Text("Close")
                 }
-            }
+            },
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
         )
     }
 
@@ -318,7 +357,9 @@ fun BookDetailScreen(
                 TextButton(onClick = { showPersonalDialog = false }) {
                     Text("Close")
                 }
-            }
+            },
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
         )
     }
 

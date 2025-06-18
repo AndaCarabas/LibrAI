@@ -21,11 +21,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
+import androidx.core.net.toUri
 
 class BookFormViewModel (private val repository: BookRepository) : ViewModel() {
 
     var bookId      by mutableStateOf<String?>(null)
-    var isbn       by mutableStateOf<String?>(null)
+    var isbn           by mutableStateOf("")
+    var description by mutableStateOf<String?>(null)
     var bookTitle   by mutableStateOf("")
     var bookAuthor  by mutableStateOf("")
     var coverUrl    by mutableStateOf<String?>(null)
@@ -33,6 +35,10 @@ class BookFormViewModel (private val repository: BookRepository) : ViewModel() {
     var errorMessage by mutableStateOf<String?>(null)
     private val _userUid = mutableStateOf<String?>(null)
     val userUid: State<String?> = _userUid
+    var categoriesText by mutableStateOf("")    // raw: "Mystery, Classic"
+    var status         by mutableStateOf("To Read")
+    var notesText      by mutableStateOf("")
+    private var existingDate: Long? = null
 
 
     private val _bookInfo = MutableStateFlow<BookInfo?>(null)
@@ -42,7 +48,7 @@ class BookFormViewModel (private val repository: BookRepository) : ViewModel() {
 
     fun initForm(bookId: String?, isbn: String?) {
         this.bookId = bookId
-        this.isbn   = isbn
+        this.isbn   = isbn.toString()
 
         when {
             bookId != null -> loadExistingBook(bookId)
@@ -57,6 +63,13 @@ class BookFormViewModel (private val repository: BookRepository) : ViewModel() {
                 bookTitle    = b.title
                 bookAuthor   = b.author
                 coverUrl = b.coverUrl
+                isbn           = b.isbn
+                description    = b.description
+                imageUri       = b.coverUrl?.toUri()
+                categoriesText = b.categories.joinToString(", ")
+                status         = b.status
+                notesText      = b.notes.orEmpty()
+                existingDate   = b.timestamp
             }
         }
     }
@@ -69,46 +82,42 @@ class BookFormViewModel (private val repository: BookRepository) : ViewModel() {
                 bookTitle = result.title
                 bookAuthor = result.author
                 coverUrl = result.coverUrl
+                description = result.description
+                categoriesText = result.categories.joinToString(", ")
             } else {
                 bookNotFound = true
             }
         }
     }
-//    fun saveBook(userId: String) {
-//        val newBook = Book(
-//            title = bookTitle.trim(),
-//            author = bookAuthor.trim(),
-//            coverUrl = imageUri?.toString() ?: coverUrl
-//        )
-//        viewModelScope.launch {
-//            val result = repository.addBook(userId, newBook)
-//            if(result.isSuccess){
-//                books.add(newBook)
-//                bookTitle = ""
-//                bookAuthor = ""
-//            }
-//            else{
-//                errorMessage = result.exceptionOrNull()?.message
-//            }
-//        }
-//    }
 
     fun saveBook(onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
                 // 1) If the user picked/took a photo, upload it now
-                val finalCoverUrl = imageUri
-                    ?.let { repository.uploadCoverImage(it) }
-                    ?: coverUrl  // else keep the API‐provided URL (or null)
+                val finalCoverUrl = when {
+                    imageUri?.scheme in listOf("content", "file") ->
+                        repository.uploadCoverImage(imageUri!!)
+                    else ->
+                        coverUrl
+                }
                 // 2) decide on id
                 val id = bookId ?: repository.generateBookId()
+                val cats = categoriesText
+                    .split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
                 // 2) Build the Book object
                 val b = Book(
                     id       = id,
                     title    = bookTitle.trim(),
                     author   = bookAuthor.trim(),
                     coverUrl = finalCoverUrl,
-                    isbn     = isbn ?: ""
+                    isbn     = isbn.trim() ?: "",
+                    description = description?.trim(),
+                    timestamp   = bookId?.let { existingDate } ?: System.currentTimeMillis(),
+                    categories  = cats,
+                    status      = status,
+                    notes       = notesText.takeIf { it.isNotBlank()}
                 )
 
                 // 3) Persist in Firestore
@@ -118,32 +127,5 @@ class BookFormViewModel (private val repository: BookRepository) : ViewModel() {
                 onResult(false)
             }
         }
-    }
-
-
-
-    @Composable
-    fun pickImageLauncher(): ActivityResultLauncher<String> =
-        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            uri?.let { imageUri = it }
-        }
-
-    @Composable
-    fun takePhotoLauncher(
-        context: Context
-    ): Pair<ActivityResultLauncher<Uri>, () -> Uri> {
-        val photoFile = File.createTempFile("book_cover_", ".jpg", context.cacheDir)
-        val uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.provider",
-            photoFile
-        )
-        imageUri = uri
-        return Pair(
-            rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-                if (!success) imageUri = null
-            },
-            { uri }
-        )
     }
 }

@@ -109,7 +109,12 @@ class BookRepository (
             BookInfo(
                 title = volumeInfo?.get("title")?.jsonPrimitive?.content ?: "No title",
                 author = volumeInfo?.get("authors")?.jsonArray?.getOrNull(0)?.jsonPrimitive?.content ?: "Unknown",
-                coverUrl = volumeInfo?.get("imageLinks")?.jsonObject?.get("thumbnail")?.jsonPrimitive?.content?.replace("http://", "https://") ?: ""
+                coverUrl = volumeInfo?.get("imageLinks")?.jsonObject?.get("thumbnail")?.jsonPrimitive?.content?.replace("http://", "https://") ?: "",
+                description = volumeInfo?.get("description")?.jsonPrimitive?.contentOrNull,
+                categories = volumeInfo
+                    ?.get("categories")?.jsonArray
+                    ?.mapNotNull { it.jsonPrimitive.contentOrNull }
+                    ?: emptyList()
             )
         } catch (e: Exception) {
             null

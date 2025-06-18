@@ -8,6 +8,7 @@ data class Book(
     val description: String? = null,
     val coverUrl: String? = null,
     val timestamp: Long = System.currentTimeMillis(),
-    val summary: String? = null,
-    val notes: String? = null
+    val notes: String? = null,
+    val categories: List<String> = emptyList(),      // e.g. ["Mystery","Classic"]
+    val status: String = "To Read"
 )

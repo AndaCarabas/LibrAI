@@ -12,10 +12,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -24,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -100,14 +105,17 @@ fun BookFormScreen(
                 }) {
                     Text("Add Manually")
                 }
-            }
+            } ,
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
         )
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Cover image preview
@@ -153,6 +161,51 @@ fun BookFormScreen(
             label = { Text("Author") },
             modifier = Modifier.fillMaxWidth()
         )
+        OutlinedTextField(
+            value = viewModel.isbn.toString(),
+            onValueChange = { viewModel.isbn = it },
+            label = { Text("ISBN") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = viewModel.description.orEmpty(),
+            onValueChange = { viewModel.description = it },
+            label = { Text("Description") },
+            modifier = Modifier.fillMaxWidth().height(120.dp),
+            maxLines = 5
+        )
+        OutlinedTextField(
+            value = viewModel.categoriesText,
+            onValueChange = { viewModel.categoriesText = it },
+            label = { Text("Categories (comma-separated)") },
+            placeholder = { Text("e.g. Mystery, Classic") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(8.dp))
+        Text("Status", style = MaterialTheme.typography.bodyMedium)
+        Row {
+            listOf("To Read","Reading","Read").forEach { option ->
+                Row(Modifier.padding(end = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = viewModel.status == option,
+                        onClick  = { viewModel.status = option }
+                    )
+                    Text(option)
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = viewModel.notesText,
+            onValueChange = { viewModel.notesText = it },
+            label       = { Text("Notes") },
+            placeholder = { Text("e.g. Lent to Alex on 06/22") },
+            modifier    = Modifier
+                .fillMaxWidth()
+                .height(120.dp),
+            maxLines = 5
+        )
+
 
         // TODO Add more fields: publisher, description, etc.
 

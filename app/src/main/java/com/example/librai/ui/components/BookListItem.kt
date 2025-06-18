@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -39,7 +41,8 @@ fun BookListItem(book: Book, onClick: () -> Unit) {
             model = book.coverUrl,
             contentDescription = "Cover",
             modifier = Modifier
-                .size(56.dp)
+                .fillMaxWidth(0.2f) // 60% of screen width
+                .aspectRatio(0.7f)
                 .clip(RoundedCornerShape(8.dp)),
             contentScale = ContentScale.Crop
         )
