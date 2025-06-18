@@ -59,6 +59,8 @@ import com.example.librai.viewmodel.BookDetailViewModel
 import com.example.librai.viewmodel.BookDetailViewModelFactory
 import com.example.librai.viewmodel.BookFormViewModel
 import com.example.librai.viewmodel.BookFormViewModelFactory
+import com.example.librai.viewmodel.ProfileViewModel
+import com.example.librai.viewmodel.ProfileViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -76,6 +78,11 @@ fun BookDetailScreen(
     val viewModel: BookDetailViewModel = viewModel(
         factory = BookDetailViewModelFactory(firestore,auth)
     )
+
+    val profileVm: ProfileViewModel = viewModel(
+        factory = ProfileViewModelFactory(context, auth, firestore)
+    )
+    val aiEnabled by profileVm.aiEnabled.collectAsState(initial = true)
 
     val book by viewModel.book.collectAsState()
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -211,10 +218,19 @@ fun BookDetailScreen(
 
                             Spacer(Modifier.height(24.dp))
                             // Your three action buttons
+                            if(!aiEnabled){
+                                Text(
+                                    "AI features are turned off. Enable them in your Profile to see summary & recs.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
                             Button(
                                 onClick = {
                                     viewModel.fetchSummary(b)
                                 },
+                                enabled = aiEnabled,
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
                             ) {
@@ -234,6 +250,7 @@ fun BookDetailScreen(
                                 onClick = {
                                     viewModel.fetchSimilar(b)
                                 },
+                                enabled = aiEnabled,
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
                             ) {
@@ -254,6 +271,7 @@ fun BookDetailScreen(
                                 onValueChange = { userNotes = it },
                                 label = { Text("What did you love about this book?") },
                                 placeholder = { Text("e.g. slow-burn romance, witty banter…") },
+                                enabled = aiEnabled,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 8.dp)
@@ -263,7 +281,7 @@ fun BookDetailScreen(
                                 onClick = {
                                     viewModel.fetchContextualRecs(b, userNotes)
                                 },
-                                enabled = !viewModel.isLoadingPersonalized,
+                                enabled = !viewModel.isLoadingPersonalized && aiEnabled,
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
                             ) {
@@ -282,7 +300,8 @@ fun BookDetailScreen(
                             Button(
                                 onClick = { /* Intent to browser or ecommerce */ },
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
+                                enabled = aiEnabled
                             ) {
                                 Text("Buy Book")
                             }
