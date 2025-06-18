@@ -23,14 +23,17 @@ import com.example.librai.ui.screens.AddBookOptionScreen
 import com.example.librai.ui.screens.AuthScreen
 import com.example.librai.ui.screens.BarcodeScannerScreen
 import com.example.librai.ui.screens.BookDetailScreen
+import com.example.librai.ui.screens.ProfileScreen
 import com.example.librai.ui.screens.BookFormScreen
 import com.example.librai.ui.screens.BookResultScreen
+import com.example.librai.ui.screens.EditProfileScreen
 import com.example.librai.ui.screens.HomeScreen
 import com.example.librai.ui.screens.LibraryScreen
 import com.example.librai.viewmodel.AuthViewModel
 import com.example.librai.viewmodel.BookFormViewModel
 import com.example.librai.viewmodel.BookFormViewModelFactory
 import com.example.librai.viewmodel.LibraryViewModel
+import com.example.librai.viewmodel.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -135,6 +138,14 @@ fun AppNavGraph(
                 bookId = backStack.arguments!!.getString("bookId")!!,
                 navController = navController
             )
+        }
+
+        composable("profile") {
+            ProfileScreen(navController = navController)
+        }
+
+        composable("editProfile") {
+            EditProfileScreen(navController = navController)
         }
     }
 }

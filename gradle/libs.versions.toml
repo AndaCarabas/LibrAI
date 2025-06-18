@@ -6,6 +6,7 @@ barcodeScanning = "17.3.0"
 cameraCamera2 = "1.4.2"
 coilCompose = "2.5.0"
 coreSplashscreen = "1.0.1"
+datastorePreferences = "1.1.7"
 firebaseBom = "33.15.0"
 firebaseStorageKtx = "21.0.2"
 gson = "2.11.0"
@@ -30,6 +31,7 @@ firebaseCommonKtx = "21.0.0"
 navigationCompose = "2.9.0"
 navigationRuntimeAndroid = "2.9.0"
 navigationComposeJvmstubs = "2.9.0"
+datastoreCoreAndroid = "1.1.7"
 
 [libraries]
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
@@ -41,6 +43,7 @@ androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", versi
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "cameraCamera2" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "barcodeScanning" }
@@ -73,6 +76,7 @@ ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorClien
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktorClientContentNegotiation" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorClientCore" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorSerializationKotlinxJson" }
+androidx-datastore-core-android = { group = "androidx.datastore", name = "datastore-core-android", version.ref = "datastoreCoreAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
