@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
     id ("kotlin-parcelize")
+    kotlin("plugin.serialization") version "1.9.10"
 }
 
 android {
@@ -21,6 +22,18 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        val geminiKey: String = project
+            .findProperty("GEMINI_API_KEY") as? String
+            ?: throw GradleException(
+                "Please define GEMINI_API_KEY in your gradle.properties"
+            )
+
+        buildConfigField(
+            type  = "String",
+            name  = "GEMINI_API_KEY",
+            value = "\"$geminiKey\""
+        )
+
         val openAiKey: String = project
             .findProperty("OPENAI_API_KEY") as? String
             ?: throw GradleException(
@@ -32,6 +45,7 @@ android {
             name  = "OPENAI_API_KEY",
             value = "\"$openAiKey\""
         )
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

@@ -28,6 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -78,6 +79,8 @@ fun BookDetailScreen(
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var showSummaryDialog by remember { mutableStateOf(false) }
     var showSimilarDialog by remember { mutableStateOf(false) }
+    var showPersonalDialog by remember { mutableStateOf(false) }
+    var userNotes by remember { mutableStateOf("") }
 
     // Load when screen is shown
     LaunchedEffect(bookId) {
@@ -141,6 +144,7 @@ fun BookDetailScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
+                        .padding(16.dp)
                 ) {
                     // Cover
                     AsyncImage(
@@ -215,6 +219,31 @@ fun BookDetailScreen(
                                 Text("Find Similar Books")
                             }
                             Spacer(Modifier.height(12.dp))
+
+                            OutlinedTextField(
+                                value = userNotes,
+                                onValueChange = { userNotes = it },
+                                label = { Text("What did you love about this book?") },
+                                placeholder = { Text("e.g. slow-burn romance, witty banter…") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            )
+                            Button(
+                                onClick = {
+                                    viewModel.fetchContextualRecs(b, userNotes)
+                                    showPersonalDialog = true
+                                },
+                                enabled = !viewModel.isLoadingPersonalized,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                            ) {
+                                if (viewModel.isLoadingPersonalized) {
+                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White)
+                                    Spacer(Modifier.width(8.dp))
+                                }
+                                Text("Get Personalized Recs")
+                            }
                             Button(
                                 onClick = { /* Intent to browser or ecommerce */ },
                                 modifier = Modifier.fillMaxWidth(),
@@ -264,6 +293,29 @@ fun BookDetailScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showSimilarDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+
+    if (showPersonalDialog) {
+        AlertDialog(
+            onDismissRequest = { showPersonalDialog = false },
+            title   = { Text("Recommended for You") },
+            text    = {
+                if (viewModel.personalizedRecs.isEmpty() && !viewModel.isLoadingPersonalized) {
+                    Text("No recommendations found ${viewModel.personalizedRecs.isEmpty()}.")
+                } else {
+                    Column {
+                        viewModel.personalizedRecs.forEach { info ->
+                            Text("• ${info.title} by ${info.author}")
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showPersonalDialog = false }) {
                     Text("Close")
                 }
             }
