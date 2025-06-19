@@ -111,7 +111,7 @@ fun BookDetailScreen(
                 TextButton(onClick = {
                     showDeleteConfirm = false
                     viewModel.deleteBook(bookId) { success ->
-                        if (success) navController.popBackStack("library", false)
+                        if (success) navController.popBackStack()
                         else Toast.makeText(context, "Delete failed", Toast.LENGTH_SHORT).show()
                     }
                 }) { Text("Delete") }

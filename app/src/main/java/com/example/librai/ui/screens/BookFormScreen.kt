@@ -212,7 +212,7 @@ fun BookFormScreen(
         Spacer(Modifier.height(24.dp))
         Button(onClick = {
             viewModel.saveBook { success ->
-                if (success) navController.popBackStack("library", false)
+                if (success) navController.popBackStack()
                 else Toast.makeText(context, "Save failed", Toast.LENGTH_SHORT).show()
             }
         }) {

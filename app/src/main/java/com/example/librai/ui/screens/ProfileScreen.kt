@@ -16,7 +16,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -81,6 +83,23 @@ fun ProfileScreen(
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        navController.navigate("editProfile")
+                    }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit")
+                    }
+                    IconButton(
+                        onClick = {
+                            viewModel.signOut()
+                            navController.navigate("auth") {
+                                popUpTo(0); launchSingleTop = true
+                            }
+                        }
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp, "Logout", tint = Color.White)
                     }
                 },
                 title = { /* empty */ },
@@ -170,10 +189,6 @@ fun ProfileScreen(
 
                     Spacer(Modifier.height(24.dp))
 
-                    // (optional) Edit profile button
-                    Button(onClick = { navController.navigate("editProfile") }) {
-                        Text("Edit Profile")
-                    }
                 }
             }
         }

@@ -65,7 +65,7 @@ fun AppNavGraph(
             AuthScreen(navController = navController)
         }
         composable("home") {
-            HomeScreen(authViewModel, navController)
+            HomeScreen(navController)
         }
         composable("library") {
             val userId = FirebaseAuth.getInstance().currentUser?.uid

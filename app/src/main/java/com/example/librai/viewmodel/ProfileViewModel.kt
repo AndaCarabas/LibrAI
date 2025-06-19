@@ -127,4 +127,8 @@ class ProfileViewModel (
                 .set(mapOf("aiEnabled" to enabled), SetOptions.merge())
         }
     }
+
+    fun signOut() {
+        auth.signOut()
+    }
 }
