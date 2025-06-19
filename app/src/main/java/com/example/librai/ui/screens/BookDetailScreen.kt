@@ -1,5 +1,8 @@
 package com.example.librai.ui.screens
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
@@ -54,6 +57,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.librai.data.repository.BookRepository
+import com.example.librai.models.BookInfo
+import com.example.librai.ui.components.RecommendationCard
 import com.example.librai.ui.theme.PrimaryColor
 import com.example.librai.viewmodel.BookDetailViewModel
 import com.example.librai.viewmodel.BookDetailViewModelFactory
@@ -63,6 +68,7 @@ import com.example.librai.viewmodel.ProfileViewModel
 import com.example.librai.viewmodel.ProfileViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -342,7 +348,11 @@ fun BookDetailScreen(
                         Text("No recommendations found.")
                     } else {
                         viewModel.similarBooks.forEach { info ->
-                            Text("• ${info.title} by ${info.author}")
+                            //Text("• ${info.title} by ${info.author}")
+                            val ctx = LocalContext.current
+                            RecommendationCard(
+                                book = info
+                            )
                         }
                     }
                 }
@@ -367,7 +377,10 @@ fun BookDetailScreen(
                 } else {
                     Column {
                         viewModel.personalizedRecs.forEach { info ->
-                            Text("• ${info.title} by ${info.author}")
+                            //Text("• ${info.title} by ${info.author}")
+                            RecommendationCard(
+                                book = info
+                            )
                         }
                     }
                 }

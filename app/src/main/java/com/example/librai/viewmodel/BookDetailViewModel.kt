@@ -261,7 +261,7 @@ class BookDetailViewModel (
                 Log.d("BookAPI", "Extracted JSON →\n$jsonArrayText")
 
                 personalizedRecs = try {
-                    Json.decodeFromString(jsonArrayText)
+                    Json.decodeFromString<List<BookInfo>>(jsonArrayText)
                 } catch (e: Exception) {
                     Log.e("BookAPI", "JSON parse error", e)
                     emptyList()

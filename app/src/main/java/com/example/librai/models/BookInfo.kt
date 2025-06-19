@@ -8,5 +8,6 @@ class BookInfo (
     val author: String = "",
     val coverUrl: String = "",
     val description: String? = null,
-    val categories: List<String> = emptyList()
+    val categories: List<String> = emptyList(),
+    val buyLink: String?   = null
 )
