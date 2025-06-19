@@ -35,10 +35,13 @@ class MainActivity : ComponentActivity() {
                 val authViewModel = remember { AuthViewModel(AuthRepository(firebaseAuth)) }
                 val libraryViewModel = remember {LibraryViewModel(BookRepository(FirebaseFirestore.getInstance(), firebaseAuth)) }
                 val navController = rememberNavController()
+
+                val startDest = if (firebaseAuth.currentUser != null) "home" else "auth"
                 AppNavGraph(
                     navController = navController,
                     authViewModel = authViewModel,
-                    libraryViewModel = libraryViewModel
+                    libraryViewModel = libraryViewModel,
+                    startAt = if (firebaseAuth.currentUser != null) "home" else "auth"
                 )
 
             }

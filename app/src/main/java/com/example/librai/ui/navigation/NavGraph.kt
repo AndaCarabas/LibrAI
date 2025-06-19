@@ -49,7 +49,8 @@ sealed class Screen(val route: String) {
 fun AppNavGraph(
     navController: NavHostController,
     authViewModel: AuthViewModel,
-    libraryViewModel: LibraryViewModel
+    libraryViewModel: LibraryViewModel,
+    startAt: String
 ) {
 
     val firestore = FirebaseFirestore.getInstance()
@@ -58,7 +59,7 @@ fun AppNavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = "auth"
+        startDestination = startAt
     ) {
         composable("auth") {
             AuthScreen(navController = navController)
