@@ -23,10 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.librai.models.Book
 import com.example.librai.ui.theme.TextPrimary
+import com.example.librai.R
 
 @Composable
 fun BookListItem(book: Book, onClick: () -> Unit) {
@@ -40,6 +42,9 @@ fun BookListItem(book: Book, onClick: () -> Unit) {
         AsyncImage(
             model = book.coverUrl,
             contentDescription = "Cover",
+            placeholder   = painterResource(R.drawable.book_placeholder),
+            error         = painterResource(R.drawable.book_placeholder),
+            fallback      = painterResource(R.drawable.book_placeholder),
             modifier = Modifier
                 .fillMaxWidth(0.2f) // 60% of screen width
                 .aspectRatio(0.7f)
